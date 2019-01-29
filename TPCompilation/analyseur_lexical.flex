@@ -15,6 +15,34 @@
                     
                     
 %%
+[0-9]+ { return NOMBRE; }
+\; {return POINT_VIRGULE;}
+\+ {return PLUS;}
+\- {return MOINS;}
+\* {return FOIS;}
+\/ {return DIVISE;}
+\( {return PARENTHESE_OUVRANTE;}
+\) {return PARENTHESE_FERMANTE;}
+\[ {return CROCHET_OUVRANT;}
+\] {return CROCHET_FERMANT;}
+\{ {return ACCOLADE_OUVRANTE;}
+\} {return ACCOLADE_FERMANTE;}
+\= {return EGAL;}
+\< {return INFERIEUR;}
+\& {return ET;}
+\| {return OU;}
+\! {return NON;}
+"si" {return SI;}
+"alors" {return ALORS;}
+"sinon" {return SINON;}
+"tantque" {return TANTQUE;}
+"faire" {return FAIRE;}
+"entier" {return ENTIER;}
+"retour" {return RETOUR;}
+"lire" {return LIRE;}
+"ecrire" {return ECRIRE;}
+[A-Za-z$_][A-Za-z0-9$_]* {return IDENTIF;}
+, {return VIRGULE;}
 
 
 
