@@ -39,12 +39,10 @@
 "faire" {return FAIRE;}
 "entier" {return ENTIER;}
 "retour" {return RETOUR;}
-"lire" {return LIRE;}
-"ecrire" {return ECRIRE;}
 [A-Za-z$_][A-Za-z0-9$_]* {return IDENTIF;}
-, {return VIRGULE;}
+\, {return VIRGULE;}
 [ \t] {}
-\n {  }
+\n { }
 
 
 %%
