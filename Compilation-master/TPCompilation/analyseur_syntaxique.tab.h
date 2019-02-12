@@ -70,13 +70,23 @@ extern int yydebug;
     ACCOLADE_FERMANTE = 280,
     VIRGULE = 281,
     POINT_VIRGULE = 282,
-    ENTIER = 283
+    ENTIER = 283,
+    MOINSU = 284
   };
 #endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+
+union YYSTYPE
+{
+#line 12 "analyseur_syntaxique.y" /* yacc.c:1909  */
+double dval; int ival;
+
+#line 87 "analyseur_syntaxique.tab.h" /* yacc.c:1909  */
+};
+
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif

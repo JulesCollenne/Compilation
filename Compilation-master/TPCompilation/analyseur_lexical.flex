@@ -15,7 +15,7 @@
                     
                     
 %%
-[0-9]+ { return NOMBRE; }
+[0-9]+|[0-9]*\.[0-9]+ {yylval.dval=atof(yytext);return NOMBRE;}
 \; {return POINT_VIRGULE;}
 \+ {return PLUS;}
 \- {return MOINS;}
@@ -39,7 +39,7 @@
 "faire" {return FAIRE;}
 "entier" {return ENTIER;}
 "retour" {return RETOUR;}
-[A-Za-z$_][A-Za-z0-9$_]* {return IDENTIF;}
+[A-Za-z$_][A-Za-z0-9$_]* {yylval.dval=atoi(yytext);return IDENTIF;}
 \, {return VIRGULE;}
 \n { }
 

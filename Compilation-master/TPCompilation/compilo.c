@@ -4,6 +4,7 @@
 
 #include "analyseur_lexical_flex.h"
 #include "analyseur_syntaxique.tab.h"
+#include "affiche_arbre_abstrait.h"
 
 FILE *yyin;
 extern char *yytext;   // déclaré dans analyseur_lexical
@@ -97,7 +98,7 @@ int main(int argc, char **argv) {
    	yyparse();
   }
   if( affiche_syntaxe_abstraite ) {
-    //Affiche arbre abstrait
+    
   }
   if(affiche_code3a){
   	//Affiche code 3a 
