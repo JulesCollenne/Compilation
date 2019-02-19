@@ -1,6 +1,4 @@
-entier $a;
-main()
+entier a;
+b()
 {
-$a = 1;
-ecrire($a);
 }
