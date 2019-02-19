@@ -4,9 +4,12 @@
 
 #include "analyseur_lexical_flex.h"
 #include "analyseur_syntaxique.tab.h"
+#include "affiche_arbre_abstrait.h"
+#include "syntabs.h"
 
 FILE *yyin;
 extern char *yytext;   // déclaré dans analyseur_lexical
+extern n_prog *n;
 
 /***********************************************************************
  * Fonction auxiliaire appelée par le compilo en mode -l pour tester 
@@ -92,9 +95,14 @@ int main(int argc, char **argv) {
   if(affiche_lex == 1) {
     test_yylex( yyin );    
   }  
-  yyparse();  
+   
+  if( affiche_syntaxe == 1 ) {
+   	yyparse();
+    printf("reuussi \n"); 
+  }
   if( affiche_syntaxe_abstraite ) {
-    //Affiche arbre abstrait
+      
+    
   }
   if(affiche_code3a){
   	//Affiche code 3a 
