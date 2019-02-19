@@ -16,7 +16,7 @@
                     
                     
 %%
-[0-9]+|[0-9]*\.[0-9]+ {yylval.ival=atoi(yytext);return NOMBRE;}
+[0-9]+ {yylval.ival=atoi(yytext);return NOMBRE;}
 \; {return POINT_VIRGULE;}
 \+ {return PLUS;}
 \- {return MOINS;}
@@ -40,14 +40,14 @@
 "faire" {return FAIRE;}
 "entier" {yylval.ival=atoi(yytext);return ENTIER;}
 "retour" {return RETOUR;}
-[A-Za-z$_][A-Za-z0-9$_]* {yylval.cval=yytext;return IDENTIF;}
+[A-Za-z$_] {yylval.cval=yytext;return IDENTIF;}
 \, {return VIRGULE;}
 \n { }
 
 
 %%
 
-/* Code copié À LA FIN de l'analyseyur */
+/* Code copié À LA FIN de l'analyseur */
 
 int yywrap(){
   return 1;
