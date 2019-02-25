@@ -1417,7 +1417,7 @@ yyreduce:
 
   case 17:
 #line 109 "analyseur_syntaxique.y" /* yacc.c:1646  */
-    { (yyval.n_l_instr) = NULL;}
+    { (yyval.n_l_instr) = NULL; }
 #line 1422 "analyseur_syntaxique.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1447,7 +1447,7 @@ yyreduce:
 
   case 27:
 #line 114 "analyseur_syntaxique.y" /* yacc.c:1646  */
-    { cree_n_instr_tantque((yyvsp[-2].n_exp),(yyvsp[0].n_instr)); }
+    { (yyval.n_instr) = cree_n_instr_tantque((yyvsp[-2].n_exp),(yyvsp[0].n_instr)); }
 #line 1452 "analyseur_syntaxique.tab.c" /* yacc.c:1646  */
     break;
 

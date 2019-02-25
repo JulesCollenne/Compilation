@@ -106,12 +106,12 @@ ldecfct : decfct { $$ = cree_n_l_dec($1,NULL); }| decfct ldecfct { $$ = cree_n_l
 decfct : IDENTIF PARENTHESE_OUVRANTE largopt PARENTHESE_FERMANTE ldecvaropt ibloc { $$ = cree_n_dec_fonc($1,$3,$5,$6); };
 largopt : ldecvar { $$ = cree_n_l_dec(NULL,$1); } | { $$ = NULL; };
 ibloc : ACCOLADE_OUVRANTE linstr ACCOLADE_FERMANTE { $$ = cree_n_instr_bloc($2); };
-linstr : instr linstr { $$ = cree_n_l_instr($1,$2); } | { $$ = NULL;} ;
+linstr : instr linstr { $$ = cree_n_l_instr($1,$2); } | { $$ = NULL; } ;
 instr : affectation  | sialors | iappel | tantque | retour ;
 affectation : var EGAL expr POINT_VIRGULE {$$ = cree_n_instr_affect($1,$3);  };
 sialors : SI expr ALORS ibloc sinonopt { $$ = cree_n_instr_si($2,$4,$5); };
 sinonopt : SINON ibloc { $$ = cree_n_instr_bloc(cree_n_l_instr($2,NULL));} | { $$ = NULL; } ;
-tantque : TANTQUE expr FAIRE ibloc { cree_n_instr_tantque($2,$4); };
+tantque : TANTQUE expr FAIRE ibloc { $$ = cree_n_instr_tantque($2,$4); };
 retour : RETOUR expr POINT_VIRGULE { $$ = cree_n_instr_retour($2); } ;
 iappel : appelfct POINT_VIRGULE { $$ = cree_n_instr_appel($1); } ; 
 appelfct : IDENTIF PARENTHESE_OUVRANTE lexpr PARENTHESE_FERMANTE { $$ = cree_n_appel($1,$3); } ;
