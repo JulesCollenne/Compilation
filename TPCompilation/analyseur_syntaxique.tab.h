@@ -81,7 +81,7 @@ extern int yydebug;
 union YYSTYPE
 {
 #line 15 "analyseur_syntaxique.y" /* yacc.c:1909  */
-int ival; char *cval;
+int ival; char *sval; int op;
 			struct n_l_instr_ *n_l_instr;
 			struct n_instr_ *n_instr;
 			struct n_exp_ *n_exp;

@@ -16,7 +16,7 @@ entier $i;
         ecrire( $tab[ $i ] );
         $i = $i + 1;
     }    
-    ecrire( 0 ); # marqueur fin de tableau         
+    ecrire( 0 );        
 }
 
 echanger( entier $i, entier $j )

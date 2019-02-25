@@ -1,4 +1,5 @@
-entier a;
-b()
+entier $a;
+main()
 {
+$a = 123;
 }

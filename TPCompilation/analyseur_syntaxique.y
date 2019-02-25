@@ -12,7 +12,7 @@ int yylex();          // declare dans analyseur lexical
 int yyerror(char *s); // declare ci-dessous
 void affiche_n_prog(n_prog *n);
 %}
-%union {int ival; char *cval;
+%union {int ival; char *sval; int op;
 			struct n_l_instr_ *n_l_instr;
 			struct n_instr_ *n_instr;
 			struct n_exp_ *n_exp;
@@ -23,32 +23,32 @@ void affiche_n_prog(n_prog *n);
 			struct n_prog_ *n_prog;
 			struct n_appel_ *n_appel;
 			;}
-%token SI
-%token <cval> IDENTIF
+%token <sval> SI
+%token <sval> IDENTIF
 %token <ival> NOMBRE
-%token ALORS
-%token SINON
-%token TANTQUE
-%token FAIRE
-%token RETOUR
-%token <ival> OU
-%token <ival> ET
-%token <ival> EGAL
-%token <ival> INFERIEUR
-%token <ival> MOINS
-%token <ival> FOIS
-%token <ival> DIVISE
-%token <ival> NON
-%token <ival> PLUS
-%token PARENTHESE_OUVRANTE
-%token PARENTHESE_FERMANTE
-%token CROCHET_OUVRANT
-%token CROCHET_FERMANT
-%token ACCOLADE_OUVRANTE
-%token ACCOLADE_FERMANTE
-%token VIRGULE
-%token POINT_VIRGULE
-%token <ival> ENTIER 
+%token <sval> ALORS
+%token <sval> SINON
+%token <sval> TANTQUE
+%token <sval> FAIRE
+%token <sval> RETOUR
+%token <op> OU
+%token <op> ET
+%token <op> EGAL
+%token <op> INFERIEUR
+%token <op> MOINS
+%token <op> FOIS
+%token <op> DIVISE
+%token <op> NON
+%token <op> PLUS
+%token <sval> PARENTHESE_OUVRANTE
+%token <sval> PARENTHESE_FERMANTE
+%token <sval> CROCHET_OUVRANT
+%token <sval> CROCHET_FERMANT
+%token <sval> ACCOLADE_OUVRANTE
+%token <sval> ACCOLADE_FERMANTE
+%token <sval> VIRGULE
+%token <sval> POINT_VIRGULE
+%token <sval> ENTIER 
 
 
 %type <n_prog> programme
@@ -94,13 +94,13 @@ void affiche_n_prog(n_prog *n);
 
 %%
 
-programme : ldecvaropt ldecfct {  $$ = cree_n_prog($1,$2);affiche_n_prog($$); };
-ldecvaropt : ldecvar POINT_VIRGULE { $$ = $1; }
+programme : ldecvaropt ldecfct { $$ = cree_n_prog($1,$2); affiche_n_prog($$); };
+ldecvaropt : ldecvar POINT_VIRGULE {$$ = $1;}
 | {$$ = NULL ;};
-ldecvar : decvar ldecvarbis { $$ = cree_n_l_dec($1,$2); } ;
+ldecvar : decvar ldecvarbis { $$ = cree_n_l_dec($1,$2);} ;
 ldecvarbis : VIRGULE decvar ldecvarbis { $$ = cree_n_l_dec($2,$3); }
 | { $$ = NULL; };
-decvar : ENTIER IDENTIF { $$ = cree_n_dec_var($2); }
+decvar : ENTIER IDENTIF { $$ = cree_n_dec_var($2);}
 | ENTIER IDENTIF CROCHET_OUVRANT NOMBRE CROCHET_FERMANT { $$ = cree_n_dec_tab($2,$4); };
 ldecfct : decfct { $$ = cree_n_l_dec($1,NULL); }
 | decfct ldecfct { $$ = cree_n_l_dec($1,$2); } ;
@@ -121,7 +121,7 @@ affectation : var EGAL expr POINT_VIRGULE { $$ = cree_n_instr_affect($1,$3); };
 sialors : SI expr ALORS ibloc sinonopt { $$ = cree_n_instr_si($2,$4,$5); };
 sinonopt : SINON ibloc {$$ = $2; }
 | { $$ = NULL; } ;
-tantque : TANTQUE expr FAIRE ibloc { cree_n_instr_tantque($2,$4); };
+tantque : TANTQUE expr FAIRE ibloc { $$ = cree_n_instr_tantque($2,$4); };
 retour : RETOUR expr POINT_VIRGULE { $$ = cree_n_instr_retour($2); } ;
 iappel : appelfct POINT_VIRGULE { $$ = cree_n_instr_appel($1); } ; 
 appelfct : IDENTIF PARENTHESE_OUVRANTE lexpropt PARENTHESE_FERMANTE { $$ = cree_n_appel($1,$3); } ;

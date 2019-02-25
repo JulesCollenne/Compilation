@@ -13,34 +13,34 @@
 
 /* Déclarations à compléter ... */
                     
-                    
+id  [a-zA-Z_$][a-zA-Z0-9_$]*      
                     
 %%
-[0-9]+ {yylval.ival=atoi(yytext);return NOMBRE;}
-\; {return POINT_VIRGULE;}
-\+ {return PLUS;}
-\- {return MOINS;}
-\* {return FOIS;}
-\/ {return DIVISE;}
-\( {return PARENTHESE_OUVRANTE;}
-\) {return PARENTHESE_FERMANTE;}
-\[ {return CROCHET_OUVRANT;}
-\] {return CROCHET_FERMANT;}
-\{ {return ACCOLADE_OUVRANTE;}
-\} {return ACCOLADE_FERMANTE;}
-\= {return EGAL;}
-\< {return INFERIEUR;}
-\& {return ET;}
-\| {return OU;}
-\! {return NON;}
-"si" {return SI;}
-"alors" {return ALORS;}
-"sinon" {return SINON;}
-"tantque" {return TANTQUE;}
-"faire" {return FAIRE;}
-"entier" {yylval.ival=atoi(yytext);return ENTIER;}
-"retour" {return RETOUR;}
-[A-Za-z$_] {yylval.cval=yytext;return IDENTIF;}
+[0-9]+ {yylval.ival=atoi(strdup(yytext));return NOMBRE;}
+\; {yylval.sval=yytext;return POINT_VIRGULE;}
+\+ {yylval.sval=yytext;return PLUS;}
+\- {yylval.sval=yytext;return MOINS;}
+\* {yylval.sval=yytext;return FOIS;}
+\/ {yylval.sval=yytext;return DIVISE;}
+\( {yylval.sval=yytext;return PARENTHESE_OUVRANTE;}
+\) {yylval.sval=yytext;return PARENTHESE_FERMANTE;}
+\[ {yylval.sval=yytext;return CROCHET_OUVRANT;}
+\] {yylval.sval=yytext;return CROCHET_FERMANT;}
+\{ {yylval.sval=yytext;return ACCOLADE_OUVRANTE;}
+\} {yylval.sval=yytext;return ACCOLADE_FERMANTE;}
+\= {yylval.sval=yytext;return EGAL;}
+\< {yylval.sval=yytext;return INFERIEUR;}
+\& {yylval.sval=yytext;return ET;}
+\| {yylval.sval=yytext;return OU;}
+\! {yylval.sval=yytext;return NON;}
+"si" {yylval.sval=strdup(yytext);return SI;}
+"alors" {yylval.sval=strdup(yytext);return ALORS;}
+"sinon" {yylval.sval=strdup(yytext);return SINON;}
+"tantque" {yylval.sval=strdup(yytext);return TANTQUE;}
+"faire" {yylval.sval=strdup(yytext); return FAIRE;}
+"entier" {yylval.sval=yytext; return ENTIER;}
+"retour" {yylval.sval=strdup(yytext);return RETOUR;}
+{id} {yylval.sval=strdup(yytext);return IDENTIF;}
 \, {return VIRGULE;}
 \n { }
 
