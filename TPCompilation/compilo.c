@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "syntabs.h"
 #include "analyseur_lexical_flex.h"
 #include "analyseur_syntaxique.tab.h"
 #include "affiche_arbre_abstrait.h"
-#include "syntabs.h"
+
 
 FILE *yyin;
 extern char *yytext;   // déclaré dans analyseur_lexical
@@ -101,8 +101,8 @@ int main(int argc, char **argv) {
     printf("reuussi \n"); 
   }
   if( affiche_syntaxe_abstraite ) {
+      affiche_n_prog(n);
       
-    
   }
   if(affiche_code3a){
   	//Affiche code 3a 

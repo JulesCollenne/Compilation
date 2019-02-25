@@ -1,0 +1,32 @@
+expr : expr OU expr { $$ = cree_n_exp_op($2,$1,$3); } 
+ | expr ET expr { $$ = cree_n_exp_op($2,$1,$3); }
+ | expr EGAL expr {$$ = cree_n_exp_op($2,$1,$3);}
+ | expr INFERIEUR expr {$$ = cree_n_exp_op($2,$1,$3);}
+ | expr PLUS expr {$$ = cree_n_exp_op($2,$1,$3);}
+ | expr MOINS expr {$$ = cree_n_exp_op($2,$1,$3);}
+ | expr FOIS expr {$$ = cree_n_exp_op($2,$1,$3);}
+ | expr DIVISE expr {$$ = cree_n_exp_op($2,$1,$3);}
+ | NON expr {$$ = cree_n_exp_op($1,$2,NULL);}
+ | PARENTHESE_OUVRANTE expr PARENTHESE_FERMANTE {$$=$2;}
+ | MOINS expr %prec MOINSU {$$ = cree_n_exp_op($1,$2,NULL);}
+ | NOMBRE {$$ = cree_n_exp_entier($1);}
+ | appelfct {$$ = cree_n_exp_appel($1);}
+ | var {$$ = cree_n_exp_var($1);}
+
+
+
+
+ expr : expr OU expr1 | expr1
+expr1 : expr1 ET expr2 | expr2
+expr2 : expr2 EGAL expr3 | expr2 INFERIEUR expr3 | expr3
+expr3 : expr3 PLUS expr4 | expr3 MOINS expr4 | expr4
+expr4 : expr4 FOIS expr5 | expr4 DIVISE expr5 | expr5
+expr5 : expr5 | expr6
+expr6 : PARENTHESE_OUVRANTE expr6 PARENTHESE_FERMANTE | NOMBRE | appelfct | var
+
+%type <n_exp> expr1
+%type <n_exp> expr2
+%type <n_exp> expr3
+%type <n_exp> expr4
+%type <n_exp> expr5
+%type <n_exp> expr6

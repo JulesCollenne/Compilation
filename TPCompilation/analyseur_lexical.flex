@@ -3,13 +3,15 @@
  */ 
 %{
 /* code copié AU DÉBUT de l'analyseur */
-
-#include "analyseur_syntaxique.tab.h"
 #include "syntabs.h"
+#include "analyseur_syntaxique.tab.h"
+#include <string.h>
 %}
 %option yylineno
 %option nounput
 %option noinput
+
+
 
 /* Déclarations à compléter ... */
                     
@@ -38,11 +40,16 @@
 "sinon" {return SINON;}
 "tantque" {return TANTQUE;}
 "faire" {return FAIRE;}
-"entier" {yylval.ival=atoi(yytext);return ENTIER;}
+"entier" {return ENTIER;}
 "retour" {return RETOUR;}
-[A-Za-z$_][A-Za-z0-9$_]* {yylval.cval=yytext;return IDENTIF;}
+[A-Za-z$_][A-Za-z0-9$_]* {yylval.cval=strdup(yytext);return IDENTIF;}
 \, {return VIRGULE;}
-\n { }
+[ \t] ;
+
+
+
+
+
 
 
 %%
