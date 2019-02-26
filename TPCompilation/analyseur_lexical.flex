@@ -46,7 +46,7 @@ id  [a-zA-Z_$][a-zA-Z0-9_$]*
 \, {return VIRGULE;}
 \n { }
 [ \t] ;
-
+#.* {};
 
 
 %%
