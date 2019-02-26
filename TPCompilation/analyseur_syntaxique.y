@@ -5,7 +5,7 @@
 #include "syntabs.h" 
 #include "affiche_arbre_abstrait.h"
 
-extern n_prog *n;   // pour syntaxe abstraite
+n_prog *n;   // pour syntaxe abstraite
 extern FILE *yyin;    // declare dans compilo
 extern int yylineno;  // declare dans analyseur lexical
 int yylex();          // declare dans analyseur lexical
@@ -49,6 +49,8 @@ void affiche_n_prog(n_prog *n);
 %token <sval> VIRGULE
 %token <sval> POINT_VIRGULE
 %token <sval> ENTIER 
+%token <sval> LIRE
+%token <sval> ECRIRE
 
 
 %type <n_prog> programme
@@ -94,7 +96,7 @@ void affiche_n_prog(n_prog *n);
 
 %%
 
-programme : ldecvaropt ldecfct { $$ = cree_n_prog($1,$2); affiche_n_prog($$); };
+programme : ldecvaropt ldecfct { $$ = cree_n_prog($1,$2); n=$$; };
 ldecvaropt : ldecvar POINT_VIRGULE {$$ = $1;}
 | {$$ = NULL ;};
 ldecvar : decvar ldecvarbis { $$ = cree_n_l_dec($1,$2);} ;
@@ -116,6 +118,7 @@ instr : affectation {$$ = $1;}
 | tantque {$$ = $1;}
 | retour {$$ = $1;}
 | ibloc {$$ = $1;}
+| ECRIRE PARENTHESE_OUVRANTE expr PARENTHESE_FERMANTE POINT_VIRGULE { $$ = cree_n_instr_ecrire($3); }
 | POINT_VIRGULE { $$ = cree_n_instr_vide(); } ;
 affectation : var EGAL expr POINT_VIRGULE { $$ = cree_n_instr_affect($1,$3); };
 sialors : SI expr ALORS ibloc sinonopt { $$ = cree_n_instr_si($2,$4,$5); };
@@ -144,6 +147,7 @@ expr : expr OU expr { $$ = cree_n_exp_op(ou,$1,$3); }
  | NOMBRE {$$ = cree_n_exp_entier($1);}
  | appelfct {$$ = cree_n_exp_appel($1);}
  | var {$$ = cree_n_exp_var($1);}
+ | LIRE PARENTHESE_OUVRANTE PARENTHESE_FERMANTE { $$ = cree_n_exp_lire() ;};
 
 var : IDENTIF { $$ = cree_n_var_simple($1); }
 | IDENTIF CROCHET_OUVRANT expr CROCHET_FERMANT { $$ = cree_n_var_indicee($1,$3); } ;

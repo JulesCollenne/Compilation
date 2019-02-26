@@ -97,10 +97,12 @@ int main(int argc, char **argv) {
   }  
    
   if( affiche_syntaxe == 1 ) {
+	 yyparse();
     printf("reussi \n"); 
   }
   if( affiche_syntaxe_abstraite ) {
      yyparse();
+     affiche_n_prog(n);
   }
   if(affiche_code3a){
   	//Affiche code 3a 
