@@ -71,7 +71,9 @@ extern int yydebug;
     VIRGULE = 281,
     POINT_VIRGULE = 282,
     ENTIER = 283,
-    MOINSU = 284
+    LIRE = 284,
+    ECRIRE = 285,
+    MOINSU = 286
   };
 #endif
 
@@ -81,7 +83,7 @@ extern int yydebug;
 union YYSTYPE
 {
 #line 15 "analyseur_syntaxique.y" /* yacc.c:1909  */
-int ival; char *cval;
+int ival; char *sval; int op;
 			struct n_l_instr_ *n_l_instr;
 			struct n_instr_ *n_instr;
 			struct n_exp_ *n_exp;
@@ -93,7 +95,7 @@ int ival; char *cval;
 			struct n_appel_ *n_appel;
 			;
 
-#line 97 "analyseur_syntaxique.tab.h" /* yacc.c:1909  */
+#line 99 "analyseur_syntaxique.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
