@@ -9,13 +9,13 @@ OBJ = analyseur_lexical_flex.o util.o analyseur_syntaxique.tab.o syntabs.o affic
 
 all: compilo
 
-compilo: compilo.c $(OBJ)
+compilo: compilo.c $(OBJ) 
 	$(CC) $(CCFLAGS) -o compilo compilo.c $(OBJ)
 
-analyseur_syntaxique.tab.c: analyseur_syntaxique.y syntabs.h tabsymboles.h parcours_arbre_abstrait.h
+analyseur_syntaxique.tab.c: analyseur_syntaxique.y syntabs.h 
 	$(YACC) $<
 
-analyseur_lexical_flex.c: analyseur_lexical.flex analyseur_syntaxique.tab.c analyseur_syntaxique.tab.h syntabs.h tabsymboles.h parcours_arbre_abstrait.h
+analyseur_lexical_flex.c: analyseur_lexical.flex analyseur_syntaxique.tab.c analyseur_syntaxique.tab.h syntabs.h 
 	$(FLEX) -o $@ $<
 
 %.o: %.c

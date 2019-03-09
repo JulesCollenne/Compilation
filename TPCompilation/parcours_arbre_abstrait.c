@@ -33,13 +33,15 @@ void parcours_appel(n_appel *n);
 
 
 extern int portee;
-
+extern tabsymboles_ tabsymboles;
+extern n_prog *n;
 /*-------------------------------------------------------------------------*/
 
 void parcours_n_prog(n_prog *n)
 {
   parcours_l_dec(n->variables);
   parcours_l_dec(n->fonctions); 
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -109,6 +111,15 @@ void parcours_instr_appel(n_instr *n)
 
 void parcours_appel(n_appel *n)
 {
+  int ligne =rechercheExecutable(n->fonction);
+  if(ligne == -1){
+		printf("Erreur semantique : fonction non declaree\n");
+		return;
+	 }
+   if(tabsymboles.tab[ligne].complement!=nb_arguments_exp(n->args)){
+     printf("Erreur semantique : fonction appelee avec le mauvais nombre d'args\n");
+		return;
+   }
   parcours_l_exp(n->args);
 }
 
@@ -181,7 +192,6 @@ void parcours_lireExp(n_exp *n)
 
 void parcours_appelExp(n_exp *n)
 {
-  
   parcours_appel(n->u.appel);
 }
 
@@ -218,18 +228,17 @@ void parcours_dec(n_dec *n)
 void parcours_foncDec(n_dec *n)
 {
 	int ligne = rechercheDeclarative(n->nom);
-	entreeFonction();
-  parcours_l_dec(n->u.foncDec_.param);
-  portee = P_VARIABLE_LOCALE;
-  parcours_l_dec(n->u.foncDec_.variables);
-  parcours_instr(n->u.foncDec_.corps);
   if(ligne != -1){
 		printf("Erreur semantique : Fonction deja declaree a ligne %d\n",ligne);
 		return;
 	}
-	ajouteIdentificateur(n->nom,portee,3,42,nb_arguments(n->u.foncDec_.param));
+  ajouteIdentificateur(n->nom,portee,3,42,nb_arguments_dec(n->u.foncDec_.param));
+	entreeFonction();
+  portee = P_VARIABLE_LOCALE;
+  parcours_l_dec(n->u.foncDec_.param);
+  parcours_l_dec(n->u.foncDec_.variables);
+  parcours_instr(n->u.foncDec_.corps);
   sortieFonction(1);
-  afficheTabsymboles();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -238,11 +247,21 @@ void parcours_varDec(n_dec *n)
 {
 	int ligne = rechercheDeclarative(n->nom);
   if(ligne != -1){
-		printf("Erreur semantique : Variable deja declaree a ligne %d\n",ligne);
+    if(portee==tabsymboles.tab[ligne].portee){
+		printf("Erreur semantique : Variable deja declaree a ligne %d dans la même portee\n",ligne);
 		return;
-	}
-	ajouteIdentificateur(n->nom,portee,1,addresseGlobaleCourante,1);
-	addresseGlobaleCourante += 4;
+    }
+    else if ((portee==P_VARIABLE_LOCALE || portee == P_ARGUMENT) && (tabsymboles.tab[ligne].portee==P_VARIABLE_GLOBALE)){
+          printf("Warning : Variable locale ou argument a le même nom qu'une variable globale");
+      }
+    else if(portee == P_VARIABLE_LOCALE && tabsymboles.tab[ligne].portee == P_ARGUMENT ) {
+      printf("Erreur semantique : Variable locale deja declaree a ligne %d comme nom d'argument\n",ligne);
+		return;
+      } 
+    }
+
+	ajouteIdentificateur(n->nom,portee,1,tabsymboles.addresseGlobaleCourante,1);
+	tabsymboles.addresseGlobaleCourante += 4;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -251,11 +270,12 @@ void parcours_tabDec(n_dec *n)
 {
 	int ligne = rechercheDeclarative(n->nom);
   if(ligne != -1){
+    
 		printf("Erreur semantique : Variable deja declaree a ligne %d\n",ligne);
 		return;
 	}
-	ajouteIdentificateur(n->nom,portee,1,addresseGlobaleCourante,n->u.tabDec_.taille);
-	addresseGlobaleCourante += 4*n->u.tabDec_.taille;
+	ajouteIdentificateur(n->nom,portee,1,tabsymboles.addresseGlobaleCourante,n->u.tabDec_.taille);
+	tabsymboles.addresseGlobaleCourante += 4*n->u.tabDec_.taille;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -276,19 +296,38 @@ void parcours_var_simple(n_var *n)
   if(rechercheExecutable(n->nom) == -1){
 		printf("Erreur semantique : Variable non declaree\n");
 		return;
-	 }
+	 } 
+   if(n->u.indicee_.indice!=NULL){
+     printf("Erreur : utilisation d un entier avec indice\n");
+     return;
+   }
 }
 
 /*-------------------------------------------------------------------------*/
 void parcours_var_indicee(n_var *n)
 {
+
+  if(rechercheExecutable(n->nom) == -1){
+		printf("Erreur semantique : Variable non declaree\n");
+		return;
+	 } 
+  if(n->u.indicee_.indice==NULL){
+     printf("Erreur : utilisation d un tableau sans indice\n");
+     return;
+   }
   parcours_exp( n->u.indicee_.indice );
 }
 /*-------------------------------------------------------------------------*/
 
-int nb_arguments(n_l_dec *n){
+int nb_arguments_dec(n_l_dec *n){
 	if(n->tete == NULL)
 		return 0;
-	else return nb_arguments(n->queue)+1;	
+	else return nb_arguments_dec(n->queue)+1;	
+}
+
+int nb_arguments_exp(n_l_exp *n){
+	if(n->tete == NULL)
+		return 0;
+	else return nb_arguments_exp(n->queue)+1;	
 }
 

@@ -2,11 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 #include "analyseur_lexical_flex.h"
 #include "analyseur_syntaxique.tab.h"
 #include "affiche_arbre_abstrait.h"
 #include "syntabs.h"
 #include "tabsymboles.h"
+#include "parcours_arbre_abstrait.h"
+
+
+
 
 FILE *yyin;
 extern char *yytext;   // déclaré dans analyseur_lexical
@@ -109,7 +114,7 @@ int main(int argc, char **argv) {
   	//Affiche code 3a 
   }  
   if(affiche_tabsymb){
-    //Affiche table de symboles
+    parcours_n_prog(n);
   }
   if(affiche_nasm){
     //Affiche code cible NASM
