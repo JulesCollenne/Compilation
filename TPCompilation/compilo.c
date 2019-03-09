@@ -114,6 +114,7 @@ int main(int argc, char **argv) {
   	//Affiche code 3a 
   }  
   if(affiche_tabsymb){
+	  yyparse();
     parcours_n_prog(n);
   }
   if(affiche_nasm){

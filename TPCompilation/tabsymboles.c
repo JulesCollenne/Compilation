@@ -132,7 +132,6 @@ void afficheTabsymboles(void) {
   for(i=0; i < tabsymboles.sommet; i++){
     printf("%d ", i);
     printf("%s ", tabsymboles.tab[i].identif);
-    
     if(tabsymboles.tab[i].portee == P_VARIABLE_GLOBALE)
       printf("GLOBALE ");
     else
