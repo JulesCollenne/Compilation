@@ -39,6 +39,7 @@ extern n_prog *n;
 
 void parcours_n_prog(n_prog *n)
 {
+  
   parcours_l_dec(n->variables);
   parcours_l_dec(n->fonctions); 
 
@@ -60,6 +61,7 @@ void parcours_l_instr(n_l_instr *n)
 void parcours_instr(n_instr *n)
 {
   if(n){
+    
     if(n->type == blocInst) parcours_l_instr(n->u.liste);
     else if(n->type == affecteInst) parcours_instr_affect(n);
     else if(n->type == siInst) parcours_instr_si(n);
@@ -116,7 +118,12 @@ void parcours_appel(n_appel *n)
 		printf("Erreur semantique : fonction non declaree\n");
 		return;
 	 }
-   if(tabsymboles.tab[ligne].complement!=nb_arguments_exp(n->args)){
+   
+
+  if(n->args==NULL)
+    printf("\n");
+  
+   else if(tabsymboles.tab[ligne].complement!=nb_arguments_exp(n->args)){
      printf("Erreur semantique : fonction appelee avec le mauvais nombre d'args\n");
 		return;
    }
@@ -200,6 +207,7 @@ void parcours_appelExp(n_exp *n)
 void parcours_l_dec(n_l_dec *n)
 {
   if( n ){
+    
     parcours_dec(n->tete);
     parcours_l_dec(n->queue);
   }
@@ -227,24 +235,43 @@ void parcours_dec(n_dec *n)
 
 void parcours_foncDec(n_dec *n)
 {
+  
 	int ligne = rechercheDeclarative(n->nom);
+  
   if(ligne != -1){
 		printf("Erreur semantique : Fonction deja declaree a ligne %d\n",ligne);
 		return;
 	}
-  ajouteIdentificateur(n->nom,portee,3,42,nb_arguments_dec(n->u.foncDec_.param));
+  if(n->u.foncDec_.param==NULL){
+    
+    ajouteIdentificateur(n->nom,portee,3,20,0);
+  }
+  else
+  {
+    
+    ajouteIdentificateur(n->nom,portee,3,20,nb_arguments_dec(n->u.foncDec_.param));
+    } /// NB_ARGUMENT_DEC_ PLANTE
+  
 	entreeFonction();
+  
   portee = P_VARIABLE_LOCALE;
+  
   parcours_l_dec(n->u.foncDec_.param);
+  
   parcours_l_dec(n->u.foncDec_.variables);
+  
   parcours_instr(n->u.foncDec_.corps);
+  
   sortieFonction(1);
+  
+  
 }
 
 /*-------------------------------------------------------------------------*/
 
 void parcours_varDec(n_dec *n)
 {
+  
 	int ligne = rechercheDeclarative(n->nom);
   if(ligne != -1){
     if(portee==tabsymboles.tab[ligne].portee){
@@ -262,6 +289,7 @@ void parcours_varDec(n_dec *n)
 
 	ajouteIdentificateur(n->nom,portee,1,tabsymboles.addresseGlobaleCourante,1);
 	tabsymboles.addresseGlobaleCourante += 4;
+  
 }
 
 /*-------------------------------------------------------------------------*/
@@ -320,13 +348,15 @@ void parcours_var_indicee(n_var *n)
 /*-------------------------------------------------------------------------*/
 
 int nb_arguments_dec(n_l_dec *n){
-	if(n->tete == NULL)
+	if(n->queue == NULL)
 		return 0;
-	else return nb_arguments_dec(n->queue)+1;	
+	else{
+    return nb_arguments_dec(n->queue)+1;	
+  }
 }
 
 int nb_arguments_exp(n_l_exp *n){
-	if(n->tete == NULL)
+	if(n->queue == NULL)
 		return 0;
 	else return nb_arguments_exp(n->queue)+1;	
 }
