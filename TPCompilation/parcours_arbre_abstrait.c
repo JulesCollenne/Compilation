@@ -33,17 +33,16 @@ void parcours_appel(n_appel *n);
 
 
 extern int portee;
-extern int adresseLocaleCourante;
-extern int adresseArgumentCourant;
-int adresseGlobaleCourante = 0;
-
+extern tabsymboles_ tabsymboles;
+extern n_prog *n;
 /*-------------------------------------------------------------------------*/
 
 void parcours_n_prog(n_prog *n)
 {
-	portee = P_VARIABLE_GLOBALE;
+  
   parcours_l_dec(n->variables);
   parcours_l_dec(n->fonctions); 
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -52,8 +51,8 @@ void parcours_n_prog(n_prog *n)
 void parcours_l_instr(n_l_instr *n)
 {
   if(n){
-	  parcours_instr(n->tete);
-	  parcours_l_instr(n->queue);
+  parcours_instr(n->tete);
+  parcours_l_instr(n->queue);
   }
 }
 
@@ -218,6 +217,7 @@ void parcours_l_dec(n_l_dec *n)
 
 void parcours_dec(n_dec *n)
 {
+
   if(n){
     if(n->type == foncDec) {
       parcours_foncDec(n);
@@ -244,27 +244,28 @@ void parcours_foncDec(n_dec *n)
 	}
   if(n->u.foncDec_.param==NULL){
     
-    ajouteIdentificateur(n->nom,portee,3,adresseGlobaleCourante,0);
+    ajouteIdentificateur(n->nom,portee,3,0,0);
   }
   else
   {
     
-    ajouteIdentificateur(n->nom,portee,3,adresseGlobaleCourante,nb_arguments_dec(n->u.foncDec_.param));
-    }
+    ajouteIdentificateur(n->nom,portee,3,0,nb_arguments_dec(n->u.foncDec_.param));
+    } /// NB_ARGUMENT_DEC_ PLANTE
   
 	entreeFonction();
   
-  parcours_l_dec(n->u.foncDec_.param);
-  
   portee = P_VARIABLE_LOCALE;
+  
+  parcours_l_dec(n->u.foncDec_.param);
   
   parcours_l_dec(n->u.foncDec_.variables);
   
   parcours_instr(n->u.foncDec_.corps);
   
   sortieFonction(1);
+
+	portee = P_VARIABLE_GLOBALE;
   
-  portee = P_VARIABLE_GLOBALE;
   
 }
 
@@ -349,7 +350,7 @@ void parcours_var_indicee(n_var *n)
 /*-------------------------------------------------------------------------*/
 
 int nb_arguments_dec(n_l_dec *n){
-	if(n->tete == NULL)
+	if(n->queue == NULL)
 		return 0;
 	else{
     return nb_arguments_dec(n->queue)+1;	
@@ -357,7 +358,7 @@ int nb_arguments_dec(n_l_dec *n){
 }
 
 int nb_arguments_exp(n_l_exp *n){
-	if(n->tete == NULL)
+	if(n->queue == NULL)
 		return 0;
 	else return nb_arguments_exp(n->queue)+1;	
 }
