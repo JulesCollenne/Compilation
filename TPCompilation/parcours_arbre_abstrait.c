@@ -3,6 +3,7 @@
 #include "util.h"
 #include "tabsymboles.h"
 #include "parcours_arbre_abstrait.h"
+#include "code3a.h"
 
 void parcours_n_prog(n_prog *n);
 void parcours_l_instr(n_l_instr *n);
@@ -14,32 +15,33 @@ void parcours_instr_appel(n_instr *n);
 void parcours_instr_retour(n_instr *n);
 void parcours_instr_ecrire(n_instr *n);
 void parcours_l_exp(n_l_exp *n);
-void parcours_exp(n_exp *n);
-void parcours_varExp(n_exp *n);
-void parcours_opExp(n_exp *n);
-void parcours_intExp(n_exp *n);
-void parcours_lireExp(n_exp *n);
-void parcours_appelExp(n_exp *n);
+operande* parcours_exp(n_exp *n);
+operande* parcours_varExp(n_exp *n);
+operande* parcours_opExp(n_exp *n);
+operande* parcours_intExp(n_exp *n);
+operande* parcours_lireExp(n_exp *n);
+operande* parcours_appelExp(n_exp *n);
 void parcours_l_dec(n_l_dec *n);
 void parcours_dec(n_dec *n);
 void parcours_foncDec(n_dec *n);
 void parcours_varDec(n_dec *n);
 void parcours_tabDec(n_dec *n);
-void parcours_var(n_var *n);
-void parcours_var_simple(n_var *n);
+operande* parcours_var(n_var *n);
+operande* parcours_var_simple(n_var *n);
 void parcours_var_indicee(n_var *n);
-void parcours_appel(n_appel *n);
+operande* parcours_appel(n_appel *n);
 
-
+// etiquette : creer dabord sans positionner avant d'utiliser
 
 extern int portee;
 extern tabsymboles_ tabsymboles;
 extern n_prog *n;
+extern code3a_ code3a;
 /*-------------------------------------------------------------------------*/
 
 void parcours_n_prog(n_prog *n)
 {
-  
+  code3a_init();
   parcours_l_dec(n->variables);
   parcours_l_dec(n->fonctions); 
 
@@ -97,10 +99,9 @@ void parcours_instr_tantque(n_instr *n)
 
 void parcours_instr_affect(n_instr *n)
 {
-
-
-  parcours_var(n->u.affecte_.var);
-  parcours_exp(n->u.affecte_.exp);
+  operande* op1 = parcours_var(n->u.affecte_.var);
+  operande* op2 = parcours_exp(n->u.affecte_.exp);
+  code3a_ajoute_instruction(assign,op2,NULL,op1,NULL);
 }
 
 /*-------------------------------------------------------------------------*/
@@ -111,12 +112,12 @@ void parcours_instr_appel(n_instr *n)
 }
 /*-------------------------------------------------------------------------*/
 
-void parcours_appel(n_appel *n)
+operande* parcours_appel(n_appel *n)
 {
   int ligne =rechercheExecutable(n->fonction);
   if(ligne == -1){
 		printf("Erreur semantique : fonction non declaree\n");
-		return;
+		return NULL;
 	 }
    
 
@@ -125,9 +126,10 @@ void parcours_appel(n_appel *n)
   
    else if(tabsymboles.tab[ligne].complement!=nb_arguments_exp(n->args)){
      printf("Erreur semantique : fonction appelee avec le mauvais nombre d'args\n");
-		return;
+		return NULL;
    }
   parcours_l_exp(n->args);
+  return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -142,13 +144,14 @@ void parcours_instr_retour(n_instr *n)
 void parcours_instr_ecrire(n_instr *n)
 {
   parcours_exp(n->u.ecrire_.expression);
+  //operande *var = code3a_new_var(
+  //code3a_ajoute_instruction(sys_write,
 }
 
 /*-------------------------------------------------------------------------*/
 
 void parcours_l_exp(n_l_exp *n)
 {
-
 
   if(n){
     parcours_exp(n->tete);
@@ -158,48 +161,72 @@ void parcours_l_exp(n_l_exp *n)
 
 /*-------------------------------------------------------------------------*/
 
-void parcours_exp(n_exp *n)
+operande* parcours_exp(n_exp *n)
 {
-  if(n->type == varExp) parcours_varExp(n);
-  else if(n->type == opExp) parcours_opExp(n);
-  else if(n->type == intExp) parcours_intExp(n);
-  else if(n->type == appelExp) parcours_appelExp(n);
-  else if(n->type == lireExp) parcours_lireExp(n);
+
+  if(n->type == varExp) return parcours_varExp(n);
+  else if(n->type == opExp) return parcours_opExp(n);
+  else if(n->type == intExp) return parcours_intExp(n);
+  else if(n->type == appelExp) return parcours_appelExp(n);
+  else if(n->type == lireExp) return parcours_lireExp(n);
+  return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void parcours_varExp(n_exp *n)
+operande* parcours_varExp(n_exp *n)
 {
-  parcours_var(n->u.var);
+  return parcours_var(n->u.var);
 }
 
 /*-------------------------------------------------------------------------*/
-void parcours_opExp(n_exp *n)
+operande* parcours_opExp(n_exp *n)
 {
-
+	operande *op1 = parcours_exp(n->u.opExp_.op1);
+	operande *op2 = parcours_exp(n->u.opExp_.op2);
+	
+	
+	operande *tmp = code3a_new_temporaire();
+	
+	switch(n->u.opExp_.op){
+		case plus : code3a_ajoute_instruction(arith_add,op1,op2,tmp,NULL); break;
+		case moins : code3a_ajoute_instruction(arith_sub,op1,op2,tmp,NULL); break;
+		case fois : code3a_ajoute_instruction(arith_mult,op1,op2,tmp,NULL); break;
+		case divise : code3a_ajoute_instruction(arith_div,op1,op2,tmp,NULL); break;
+		case egal : code3a_ajoute_instruction(jump_if_equal,op1,op2,tmp,NULL); break;
+		case inferieur : code3a_ajoute_instruction(jump_if_less,op1,op2,tmp,NULL); break;
+		case ou : code3a_ajoute_instruction(jump_if_equal,op1,op2,tmp,NULL); break;
+		case et : code3a_ajoute_instruction(jump_if_equal,op1,op2,tmp,NULL); break;
+		case non : code3a_ajoute_instruction(jump_if_equal,op1,op2,tmp,NULL); break;
+		default : break;
+	}	
+	
+	return tmp;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void parcours_intExp(n_exp *n)
+operande* parcours_intExp(n_exp *n)
 {
   char texte[ 50 ]; // Max. 50 chiffres
   sprintf(texte, "%d", n->u.entier);
+  return code3a_new_constante(n->u.entier);
 }
 
 /*-------------------------------------------------------------------------*/
-void parcours_lireExp(n_exp *n)
+operande* parcours_lireExp(n_exp *n)
 {
+	operande *tmp = code3a_new_temporaire();
+	return tmp;
   
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-void parcours_appelExp(n_exp *n)
+operande* parcours_appelExp(n_exp *n)
 {
-  parcours_appel(n->u.appel);
+  return parcours_appel(n->u.appel);
 }
 
 /*-------------------------------------------------------------------------*/
@@ -235,6 +262,7 @@ void parcours_dec(n_dec *n)
 
 void parcours_foncDec(n_dec *n)
 {
+	code3a_new_etiquette(n->nom);
   
 	int ligne = rechercheDeclarative(n->nom);
   
@@ -252,6 +280,10 @@ void parcours_foncDec(n_dec *n)
     ajouteIdentificateur(n->nom,portee,3,0,nb_arguments_dec(n->u.foncDec_.param));
     } /// NB_ARGUMENT_DEC_ PLANTE
   
+  code3a_ajoute_etiquette(n->nom);
+  code3a_ajoute_instruction(func_begin,NULL,NULL,NULL,NULL);
+  
+  
 	entreeFonction();
   
   portee = P_VARIABLE_LOCALE;
@@ -263,6 +295,8 @@ void parcours_foncDec(n_dec *n)
   parcours_instr(n->u.foncDec_.corps);
   
   sortieFonction(1);
+
+	code3a_ajoute_instruction(func_end,NULL,NULL,NULL,NULL);
 
 	portee = P_VARIABLE_GLOBALE;
   
@@ -290,6 +324,12 @@ void parcours_varDec(n_dec *n)
     }
 
 	ajouteIdentificateur(n->nom,portee,1,tabsymboles.addresseGlobaleCourante,1);
+	
+	
+	operande *var = code3a_new_var(n->nom,portee, tabsymboles.tab[ligne].adresse);
+	operande *cst = code3a_new_constante(1);
+	code3a_ajoute_instruction(alloc,cst,var,NULL,NULL);
+	
 	tabsymboles.addresseGlobaleCourante += 4;
   
 }
@@ -305,32 +345,41 @@ void parcours_tabDec(n_dec *n)
 		return;
 	}
 	ajouteIdentificateur(n->nom,portee,1,tabsymboles.addresseGlobaleCourante,n->u.tabDec_.taille);
+	
+	operande *vartab = code3a_new_var(n->nom,portee, tabsymboles.tab[ligne].adresse);
+	operande *taille = code3a_new_constante(n->u.tabDec_.taille);
+	code3a_ajoute_instruction(alloc,taille,vartab,NULL,NULL);
+	
 	tabsymboles.addresseGlobaleCourante += 4*n->u.tabDec_.taille;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void parcours_var(n_var *n)
+operande* parcours_var(n_var *n)
 {
   if(n->type == simple) {
-    parcours_var_simple(n);
+    return parcours_var_simple(n);
   }
   else if(n->type == indicee) {
     parcours_var_indicee(n);
+    return NULL;
   }
+  return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
-void parcours_var_simple(n_var *n)
-{
-  if(rechercheExecutable(n->nom) == -1){
+operande* parcours_var_simple(n_var *n)
+{	
+		int ligne=rechercheExecutable(n->nom);
+  if( ligne == -1){
 		printf("Erreur semantique : Variable non declaree\n");
-		return;
+		return NULL;
 	 } 
    if(n->u.indicee_.indice!=NULL){
      printf("Erreur : utilisation d un entier avec indice\n");
-     return;
+     return NULL;
    }
+   return code3a_new_var(n->nom,portee,tabsymboles.tab[ligne].adresse);
 }
 
 /*-------------------------------------------------------------------------*/

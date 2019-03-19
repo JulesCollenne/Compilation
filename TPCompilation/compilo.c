@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "code3a.h"
 
 
 #include "analyseur_lexical_flex.h"
@@ -16,6 +17,7 @@
 FILE *yyin;
 extern char *yytext;   // déclaré dans analyseur_lexical
 extern n_prog *n;
+extern code3a_ code3a;
 
 /***********************************************************************
  * Fonction auxiliaire appelée par le compilo en mode -l pour tester 
@@ -110,12 +112,14 @@ int main(int argc, char **argv) {
      yyparse();
      affiche_n_prog(n);
   }
-  if(affiche_code3a){
-  	//Affiche code 3a 
-  }  
+  
   if(affiche_tabsymb){
     parcours_n_prog(n);
   }
+  if(affiche_code3a){
+	 printf("affichage code 3a\n");
+  	code3a_affiche_code();
+  }  
   if(affiche_nasm){
     //Affiche code cible NASM
   }
