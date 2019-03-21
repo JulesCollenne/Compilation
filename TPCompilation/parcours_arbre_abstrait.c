@@ -41,6 +41,7 @@ extern code3a_ code3a;
 
 void parcours_n_prog(n_prog *n)
 {
+  portee=P_VARIABLE_GLOBALE;
   code3a_init();
   parcours_l_dec(n->variables);
   parcours_l_dec(n->fonctions); 
@@ -79,11 +80,21 @@ void parcours_instr(n_instr *n)
 void parcours_instr_si(n_instr *n)
 {  
 
-  parcours_exp(n->u.si_.test);
+  char *f = "faux";
+  operande *faux = code3a_new_etiquette(f);
+  char *suite = "suite";
+  operande *zero = code3a_new_constante(0);
+  operande *tmp1 = code3a_new_etiquette(suite);
+  
+  operande *tmp = parcours_exp(n->u.si_.test);
+  code3a_ajoute_instruction(jump_if_equal,tmp,zero,faux,NULL);
   parcours_instr(n->u.si_.alors);
+  code3a_ajoute_instruction(jump,tmp1,NULL,NULL,NULL);
   if(n->u.si_.sinon){
+    code3a_ajoute_etiquette(faux->u.oper_nom);
     parcours_instr(n->u.si_.sinon);
   }
+  code3a_ajoute_etiquette(tmp1->u.oper_nom);
 }
 
 /*-------------------------------------------------------------------------*/
@@ -91,8 +102,20 @@ void parcours_instr_si(n_instr *n)
 void parcours_instr_tantque(n_instr *n)
 {
 
-  parcours_exp(n->u.tantque_.test);
+   char *test = "test";
+   char *suite = "suite";
+  operande *faux = code3a_new_constante(0);
+  operande *tmp1 = code3a_new_etiquette(test);
+  operande *tmp2 = code3a_new_etiquette(suite);
+
+
+  code3a_ajoute_etiquette(tmp1->u.oper_nom);
+  operande *tmp  = parcours_exp(n->u.tantque_.test);
+  code3a_ajoute_instruction(jump_if_equal,tmp,faux,tmp2,NULL);
   parcours_instr(n->u.tantque_.faire);
+  code3a_ajoute_instruction(jump,tmp1,NULL,NULL,NULL);
+  code3a_ajoute_etiquette(tmp2->u.oper_nom);
+ 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -108,12 +131,14 @@ void parcours_instr_affect(n_instr *n)
 
 void parcours_instr_appel(n_instr *n)
 {
-  parcours_appel(n->u.appel);
+  operande *tmp = parcours_appel(n->u.appel);
+  code3a_ajoute_instruction(func_call,tmp,NULL,NULL,NULL);
 }
 /*-------------------------------------------------------------------------*/
 
 operande* parcours_appel(n_appel *n)
 {
+  
   int ligne =rechercheExecutable(n->fonction);
   if(ligne == -1){
 		printf("Erreur semantique : fonction non declaree\n");
@@ -128,24 +153,26 @@ operande* parcours_appel(n_appel *n)
      printf("Erreur semantique : fonction appelee avec le mauvais nombre d'args\n");
 		return NULL;
    }
+
   parcours_l_exp(n->args);
-  return NULL;
+  operande* tmp = code3a_new_etiquette(n->fonction);
+  return tmp;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void parcours_instr_retour(n_instr *n)
 {
-  parcours_exp(n->u.retour_.expression);
+  operande *tmp = parcours_exp(n->u.retour_.expression);
+  code3a_ajoute_instruction(func_val_ret,tmp,NULL,NULL,NULL);
 }
 
 /*-------------------------------------------------------------------------*/
 
 void parcours_instr_ecrire(n_instr *n)
 {
-  parcours_exp(n->u.ecrire_.expression);
-  //operande *var = code3a_new_var(
-  //code3a_ajoute_instruction(sys_write,
+  operande *tmp = parcours_exp(n->u.ecrire_.expression);
+  code3a_ajoute_instruction(sys_write,tmp,NULL,NULL,NULL);
 }
 
 /*-------------------------------------------------------------------------*/
@@ -193,6 +220,7 @@ operande* parcours_opExp(n_exp *n)
 		case moins : code3a_ajoute_instruction(arith_sub,op1,op2,tmp,NULL); break;
 		case fois : code3a_ajoute_instruction(arith_mult,op1,op2,tmp,NULL); break;
 		case divise : code3a_ajoute_instruction(arith_div,op1,op2,tmp,NULL); break;
+
 		case egal : code3a_ajoute_instruction(jump_if_equal,op1,op2,tmp,NULL); break;
 		case inferieur : code3a_ajoute_instruction(jump_if_less,op1,op2,tmp,NULL); break;
 		case ou : code3a_ajoute_instruction(jump_if_equal,op1,op2,tmp,NULL); break;
@@ -200,7 +228,7 @@ operande* parcours_opExp(n_exp *n)
 		case non : code3a_ajoute_instruction(jump_if_equal,op1,op2,tmp,NULL); break;
 		default : break;
 	}	
-	
+
 	return tmp;
 }
 
@@ -217,6 +245,7 @@ operande* parcours_intExp(n_exp *n)
 operande* parcours_lireExp(n_exp *n)
 {
 	operande *tmp = code3a_new_temporaire();
+  code3a_ajoute_instruction(sys_read,NULL,NULL,tmp,NULL);
 	return tmp;
   
 
@@ -262,7 +291,7 @@ void parcours_dec(n_dec *n)
 
 void parcours_foncDec(n_dec *n)
 {
-	code3a_new_etiquette(n->nom);
+	operande *tmp = code3a_new_etiquette(n->nom);
   
 	int ligne = rechercheDeclarative(n->nom);
   
@@ -278,9 +307,9 @@ void parcours_foncDec(n_dec *n)
   {
     
     ajouteIdentificateur(n->nom,portee,3,0,nb_arguments_dec(n->u.foncDec_.param));
-    } /// NB_ARGUMENT_DEC_ PLANTE
+    } 
   
-  code3a_ajoute_etiquette(n->nom);
+  code3a_ajoute_etiquette(tmp->u.oper_nom);
   code3a_ajoute_instruction(func_begin,NULL,NULL,NULL,NULL);
   
   
@@ -324,6 +353,7 @@ void parcours_varDec(n_dec *n)
     }
 
 	ajouteIdentificateur(n->nom,portee,1,tabsymboles.addresseGlobaleCourante,1);
+  
 	
 	
 	operande *var = code3a_new_var(n->nom,portee, tabsymboles.tab[ligne].adresse);
