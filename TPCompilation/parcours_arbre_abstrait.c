@@ -1,4 +1,5 @@
 #include <stdio.h>
+
 #include "syntabs.h"
 #include "util.h"
 #include "tabsymboles.h"
@@ -37,7 +38,23 @@ extern int portee;
 extern tabsymboles_ tabsymboles;
 extern n_prog *n;
 extern code3a_ code3a;
+int num_etiquette=0;
 /*-------------------------------------------------------------------------*/
+
+char * num_etiquette_to_char(){
+  
+  int *num;
+  num = &num_etiquette;
+  char *nom=malloc (sizeof (*nom) * 3); 
+  nom[0]='e';
+  char numc= num_etiquette +'0';
+  nom[1]= numc;
+  nom[2]='\0';
+  
+  ++*num;
+  
+  return nom;
+}
 
 void parcours_n_prog(n_prog *n)
 {
@@ -80,11 +97,10 @@ void parcours_instr(n_instr *n)
 void parcours_instr_si(n_instr *n)
 {  
 
-  char *f = "faux";
-  operande *faux = code3a_new_etiquette(f);
-  char *suite = "suite";
+  
+  operande *faux = code3a_new_etiquette(num_etiquette_to_char());
   operande *zero = code3a_new_constante(0);
-  operande *tmp1 = code3a_new_etiquette(suite);
+  operande *tmp1 = code3a_new_etiquette(num_etiquette_to_char());
   
   operande *tmp = parcours_exp(n->u.si_.test);
   code3a_ajoute_instruction(jump_if_equal,tmp,zero,faux,NULL);
@@ -102,11 +118,10 @@ void parcours_instr_si(n_instr *n)
 void parcours_instr_tantque(n_instr *n)
 {
 
-   char *test = "test";
-   char *suite = "suite";
+   
   operande *faux = code3a_new_constante(0);
-  operande *tmp1 = code3a_new_etiquette(test);
-  operande *tmp2 = code3a_new_etiquette(suite);
+  operande *tmp1 = code3a_new_etiquette(num_etiquette_to_char());
+  operande *tmp2 = code3a_new_etiquette(num_etiquette_to_char());
 
 
   code3a_ajoute_etiquette(tmp1->u.oper_nom);
@@ -212,8 +227,14 @@ operande* parcours_opExp(n_exp *n)
 	operande *op1 = parcours_exp(n->u.opExp_.op1);
 	operande *op2 = parcours_exp(n->u.opExp_.op2);
 	
-	
 	operande *tmp = code3a_new_temporaire();
+
+  operande *zero = code3a_new_constante(0);
+  operande *moinsun = code3a_new_constante(-1);
+
+  
+  operande *affect_negatif = code3a_new_etiquette(num_etiquette_to_char());
+  operande *test0 = code3a_new_etiquette(num_etiquette_to_char());
 	
 	switch(n->u.opExp_.op){
 		case plus : code3a_ajoute_instruction(arith_add,op1,op2,tmp,NULL); break;
@@ -221,8 +242,25 @@ operande* parcours_opExp(n_exp *n)
 		case fois : code3a_ajoute_instruction(arith_mult,op1,op2,tmp,NULL); break;
 		case divise : code3a_ajoute_instruction(arith_div,op1,op2,tmp,NULL); break;
 
-		case egal : code3a_ajoute_instruction(jump_if_equal,op1,op2,tmp,NULL); break;
-		case inferieur : code3a_ajoute_instruction(jump_if_less,op1,op2,tmp,NULL); break;
+		case egal : code3a_ajoute_instruction(jump_if_equal,op1,op2,affect_negatif,NULL);
+                code3a_ajoute_instruction(assign,zero,NULL,tmp,NULL);
+                code3a_ajoute_instruction(jump,test0,NULL,NULL,NULL);
+                code3a_ajoute_etiquette(affect_negatif->u.oper_nom);
+                code3a_ajoute_instruction(assign,moinsun,NULL,tmp,NULL);
+                code3a_ajoute_etiquette(test0->u.oper_nom); 
+                break;
+
+		case inferieur : 
+                      code3a_ajoute_instruction(jump_if_less,op1,op2,affect_negatif,NULL); 
+                      code3a_ajoute_instruction(assign,zero,NULL,tmp,NULL);
+                      code3a_ajoute_instruction(jump,test0,NULL,NULL,NULL);
+                      code3a_ajoute_etiquette(affect_negatif->u.oper_nom);
+                      code3a_ajoute_instruction(assign,moinsun,NULL,tmp,NULL);
+                      code3a_ajoute_etiquette(test0->u.oper_nom);
+
+                      break;
+
+
 		case ou : code3a_ajoute_instruction(jump_if_equal,op1,op2,tmp,NULL); break;
 		case et : code3a_ajoute_instruction(jump_if_equal,op1,op2,tmp,NULL); break;
 		case non : code3a_ajoute_instruction(jump_if_equal,op1,op2,tmp,NULL); break;
