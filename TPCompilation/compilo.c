@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "code3a.h"
 
 
 #include "analyseur_lexical_flex.h"
@@ -17,7 +16,7 @@
 FILE *yyin;
 extern char *yytext;   // déclaré dans analyseur_lexical
 extern n_prog *n;
-extern code3a_ code3a;
+int trace_tabsymb = 0;
 
 /***********************************************************************
  * Fonction auxiliaire appelée par le compilo en mode -l pour tester 
@@ -39,7 +38,7 @@ void test_yylex(FILE *yyin) {
 void affiche_message_aide(char *nom_prog) {
   fprintf(stderr, "usage: %s OPT fichier_source\n", nom_prog);
   fprintf(stderr, "\t-l affiche les tokens de l'analyse lexicale\n");
-  /*fprintf(stderr, "\t-s affiche l'arbre de derivation\n");*/
+  fprintf(stderr, "\t-s affiche l'arbre de derivation\n");
   fprintf(stderr, "\t-a affiche l'arbre abstrait\n");
   fprintf(stderr, "\t-t affiche la table des symboles\n");
   fprintf(stderr, "\t-3 affiche le code trois adresses\n");   
@@ -82,6 +81,7 @@ int main(int argc, char **argv) {
     }
     else if(!strcmp(argv[i], "-t")) {
        affiche_tabsymb = 1;
+       trace_tabsymb = 1;
     }    
     else if(!strcmp(argv[i], "-h")){
        affiche_message_aide(argv[0]);
@@ -112,14 +112,15 @@ int main(int argc, char **argv) {
      yyparse();
      affiche_n_prog(n);
   }
-  
-  if(affiche_tabsymb){
-    parcours_n_prog(n);
-  }
   if(affiche_code3a){
-	 printf("affichage code 3a\n");
+  	yyparse();
+  	parcours_n_prog(n);
   	code3a_affiche_code();
   }  
+  if(affiche_tabsymb){
+	  yyparse();
+    parcours_n_prog(n);
+  }
   if(affiche_nasm){
     //Affiche code cible NASM
   }
