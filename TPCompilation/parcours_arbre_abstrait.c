@@ -62,9 +62,9 @@ char* intToString(int nb){
 void parcours_instr_si(n_instr *n)
 {  
   
-  operande *faux = code3a_new_etiquette(_new_etiq());
+  operande *faux = code3a_new_etiquette_auto();
   operande *zero = code3a_new_constante(0);
-  operande *tmp1 = code3a_new_etiquette(_new_etiq());
+  operande *tmp1 = code3a_new_etiquette_auto();
   
   operande *tmp = parcours_exp(n->u.si_.test);
   code3a_ajoute_instruction(jump_if_equal,tmp,zero,faux,NULL);
@@ -83,11 +83,13 @@ void parcours_instr_si(n_instr *n)
 void parcours_instr_tantque(n_instr *n)
 {
   operande *faux = code3a_new_constante(0);
-  operande *tmp1 = code3a_new_etiquette(_new_etiq());
-  operande *tmp2 = code3a_new_etiquette(_new_etiq());
-
+  operande *tmp1 = code3a_new_etiquette_auto();
+  operande *tmp2 = code3a_new_etiquette_auto();
+ 
   code3a_ajoute_etiquette(tmp1->u.oper_nom);
+
   operande *tmp  = parcours_exp(n->u.tantque_.test);
+  
   code3a_ajoute_instruction(jump_if_equal,tmp,faux,tmp2,NULL);
   parcours_instr(n->u.tantque_.faire);
   code3a_ajoute_instruction(jump,tmp1,NULL,NULL,NULL);
@@ -134,7 +136,12 @@ operande* parcours_appel(n_appel *n)
    portee = P_ARGUMENT;
   parcours_l_exp(n->args);
   portee = preportee;
-  operande* tmp = code3a_new_etiquette(concatenate("call f",n->fonction));
+  char *s = malloc(sizeof(char)*2);
+  s[0]='f';
+  s[1]='\0';
+  operande* tmp = code3a_new_etiquette(strcat(s,n->fonction));
+  printf("NOMM : %s\n\n",n->fonction);
+  printf("NOMM22 : %s\n\n",tmp->u.oper_nom);
   //code3a_ajoute_instruction(func_call,tmp,NULL,NULL,NULL);
   //code3a_ajoute_instruction(assign,func_call,tmp,t,NULL);
   
@@ -199,7 +206,7 @@ operande* parcours_opExp(n_exp *n)
   operande *moinsun = code3a_new_constante(-1);
 
   
-  operande *affect_negatif = code3a_new_etiquette(_new_etiq());
+  operande *affect_negatif = code3a_new_etiquette_auto();
   operande *test0;
 	
 	switch(n->u.opExp_.op){
@@ -210,7 +217,7 @@ operande* parcours_opExp(n_exp *n)
 
 		case egal : code3a_ajoute_instruction(jump_if_equal,op1,op2,affect_negatif,NULL);
                 code3a_ajoute_instruction(assign,zero,NULL,tmp,NULL);
-                test0 = code3a_new_etiquette(_new_etiq());
+                test0 = code3a_new_etiquette_auto();
                 code3a_ajoute_instruction(jump,test0,NULL,NULL,NULL);
                 code3a_ajoute_etiquette(affect_negatif->u.oper_nom);
                 code3a_ajoute_instruction(assign,moinsun,NULL,tmp,NULL);
@@ -220,7 +227,7 @@ operande* parcours_opExp(n_exp *n)
 		case inferieur : 
                       code3a_ajoute_instruction(jump_if_less,op1,op2,affect_negatif,NULL); 
                       code3a_ajoute_instruction(assign,zero,NULL,tmp,NULL);
-                      test0 = code3a_new_etiquette(_new_etiq());
+                      test0 = code3a_new_etiquette_auto();
                       code3a_ajoute_instruction(jump,test0,NULL,NULL,NULL);
                       code3a_ajoute_etiquette(affect_negatif->u.oper_nom);
                       code3a_ajoute_instruction(assign,moinsun,NULL,tmp,NULL);
@@ -312,7 +319,7 @@ char* concatenate(char* s1,char* s2){
 void parcours_foncDec(n_dec *n)
 {
 	int ligne = rechercheDeclarative(n->nom);
-	operande *tmp = code3a_new_etiquette(n->nom);
+	operande *tmp = code3a_new_etiquette(concatenate("f",n->nom));
   
   if(ligne != -1){
 		printf("Erreur semantique : Fonction deja declaree a ligne %d\n",ligne);
@@ -328,17 +335,17 @@ void parcours_foncDec(n_dec *n)
     ajouteIdentificateur(n->nom,portee,3,0,nb_arguments_dec(n->u.foncDec_.param));
     }
   
-  code3a_ajoute_etiquette(concatenate("f",tmp->u.oper_nom));
+  code3a_ajoute_etiquette(tmp->u.oper_nom);
   
   code3a_ajoute_instruction(func_begin,NULL,NULL,NULL,NULL);
   
 	entreeFonction();
-  adresseLocaleCourante = 0;
+  //adresseLocaleCourante = 0;
   
   parcours_l_dec(n->u.foncDec_.param);
   
   portee = P_VARIABLE_LOCALE;
-  adresseLocaleCourante = 0;
+  //adresseLocaleCourante = 0;
   
   parcours_l_dec(n->u.foncDec_.variables);
   
@@ -371,7 +378,7 @@ void parcours_varDec(n_dec *n)
       } 
     }
 
-	ajouteIdentificateur(n->nom,portee,1,adresseLocaleCourante,1);
+	ajouteIdentificateur(n->nom,portee,1,adresseGlobaleCourante,1);
 	
 	if(portee != P_ARGUMENT)
 	{
@@ -379,7 +386,7 @@ void parcours_varDec(n_dec *n)
 		operande *cst = code3a_new_constante(1);
 		code3a_ajoute_instruction(alloc,cst,var,NULL,NULL);
 	}
-	adresseLocaleCourante += 4;
+	adresseGlobaleCourante += 4;
 	//tabsymboles.addresseGlobaleCourante += 4;
   
 }
@@ -394,13 +401,14 @@ void parcours_tabDec(n_dec *n)
 		printf("Erreur semantique : Variable deja declaree a ligne %d\n",ligne);
 		return;
 	}
-	ajouteIdentificateur(n->nom,portee,1,adresseLocaleCourante,n->u.tabDec_.taille);
-	
-	operande *vartab = code3a_new_var(n->nom,portee, tabsymboles.tab[ligne].adresse);
+	ajouteIdentificateur(n->nom,portee,T_TABLEAU_ENTIER,adresseGlobaleCourante,n->u.tabDec_.taille);
+
 	operande *taille = code3a_new_constante(n->u.tabDec_.taille);
+	operande *vartab = code3a_new_var(n->nom,portee, tabsymboles.tab[ligne].adresse);
+	
 	code3a_ajoute_instruction(alloc,taille,vartab,NULL,NULL);
 	
-	adresseGlobaleCourante += 4;
+	adresseGlobaleCourante += 4*n->u.tabDec_.taille;
 	//tabsymboles.addresseGlobaleCourante += 4*n->u.tabDec_.taille;
 }
 
@@ -409,10 +417,11 @@ void parcours_tabDec(n_dec *n)
 operande* parcours_var(n_var *n)
 {
   if(n->type == simple)
-    {return parcours_var_simple(n);}
+    return parcours_var_simple(n);
   else if(n->type == indicee) {
     return parcours_var_indicee(n);
   }
+  return NULL;
   
 }
 
@@ -428,7 +437,9 @@ operande* parcours_var_simple(n_var *n)
      printf("Erreur : utilisation d un entier avec indice\n");
      return NULL;
    }
-   operande* var = code3a_new_var(n->nom,portee,tabsymboles.tab[ligne].adresse);
+
+   operande* var = code3a_new_var(n->nom,tabsymboles.tab[ligne].portee,tabsymboles.tab[ligne].adresse);
+   
    if(portee == P_ARGUMENT)
 	code3a_ajoute_instruction(func_param,var,NULL,NULL,NULL);
    return var;
@@ -445,8 +456,8 @@ operande * parcours_var_indicee(n_var *n)
   if(n->u.indicee_.indice==NULL){
      printf("Erreur : utilisation d un tableau sans indice\n");
    }
-  operande* var = code3a_new_var(n->nom,portee,tabsymboles.tab[ligne].adresse);
   operande *indice = parcours_exp( n->u.indicee_.indice );
+  operande* var = code3a_new_var_indicee(n->nom,tabsymboles.tab[ligne].portee,tabsymboles.tab[ligne].adresse,indice);
   var->u.oper_var.oper_indice=indice;
   return var;
 }
