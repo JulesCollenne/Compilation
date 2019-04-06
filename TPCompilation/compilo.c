@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-
+#include "affiche_arbre_abstrait.h"
 #include "analyseur_lexical_flex.h"
 #include "analyseur_syntaxique.tab.h"
 #include "affiche_arbre_abstrait.h"
@@ -10,9 +10,6 @@
 #include "tabsymboles.h"
 #include "parcours_arbre_abstrait.h"
 #include "c3a2nasm.h"
-
-
-
 
 FILE *yyin;
 extern char *yytext;   // déclaré dans analyseur_lexical
